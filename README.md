@@ -1,6 +1,6 @@
 # Vita Ports Scanner
 
-This project uses [quark](github.com/lp1dev/quark), which is an early-stage JS/HTML framework I built to develop PS Vita (and GNU/Linux-compatible) apps.
+This project uses [quark](https://github.com/lp1dev/quark), which is an early-stage JS/HTML framework I built to develop PS Vita (and GNU/Linux-compatible) apps.
 
 It requires an **index.html** and **style.css** file as a starting point, all of the source code related to the project is present in those two files!
 
@@ -23,7 +23,7 @@ Then, install it using [VitaShell](https://github.com/TheOfficialFloW/VitaShell)
 
 ## Build
 
-If you want to modify the project and see how it works by yourself, you will need to setup [vitasdk](https://vitasdk.org/) and [quark](github.com/lp1dev/quark) on your machine.
+If you want to modify the project and see how it works by yourself, you will need to setup [vitasdk](https://vitasdk.org/) and [quark](https://github.com/lp1dev/quark) on your machine.
 
 Then, create a **projects** folder in your quark directory and clone this repository in it.
 
