@@ -1,0 +1,145 @@
+body {
+    width: 100%;
+    color: #ffffff; /* White text for contrast */
+    background-color: #0a0a1a; /* Dark blue background */
+}
+
+div {
+    width: 100%;
+}
+
+h1 {
+    color: #00ffcc; /* Neon cyan */
+    font-size: 34px;
+    width: 100%;
+    height: 40px;
+}
+
+#ports-scanner {
+    padding: 15px;
+}
+
+#results {
+    width: 100%;
+}
+
+button {
+    height: 60px;
+    width: 300px;
+    background-color: #b300ff; /* Neon purple */
+    color: #ffffff; /* White text for contrast */
+}
+
+#header-container {
+    background-color: #1a1a2e; /* Dark blue */
+    width: 100%;
+    height: 45px;
+}
+
+#header {
+    background-color: #00ffcc; /* Neon cyan */
+    color: #0a0a1a; /* Dark blue text */
+    width: 100%;
+    font-size: 15px;
+}
+
+#container {
+    background-color: #1a1a2e; /* Dark blue */
+    width: 100%;
+    height: 85%;
+    color: #ffffff; /* White text */
+    text-align: center;
+}
+
+#menu {
+    padding: 10px;
+}
+
+.button-container {
+    width: 99%;
+}
+
+.menu-button {
+    background-color: #b300ff; /* Neon purple */
+    color: #ffffff; /* White text */
+    text-align: center;
+    width: 98%;
+    height: 24px;
+    font-size: 26px;
+    margin: 5px;
+}
+
+.selected {
+    color: #00ffcc; /* Neon cyan */
+}
+
+.inline {
+    display: inline-block;
+}
+
+#footer {
+    text-align: center;
+    font-size: 12px;
+    width: 100%;
+    color: #00ffcc; /* Neon cyan */
+    height: 10%;
+    background-color: #1a1a2e; /* Dark blue */
+}
+
+i {
+    width: 100%;
+    height: 24px;
+    margin: 5px;
+}
+
+img {
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+}
+
+.item-container {
+    height: 160px;
+    background-color: #00ffcc; /* Neon cyan */
+    width: 100%;
+}
+
+.device {
+    margin: 10px;
+    height: 120px;
+    width: 96%;
+    background-color: #1a1a2e; /* Dark blue */
+    color: #00ffcc; /* Neon cyan text */
+}
+
+.device-data {
+    text-align: center;
+    color: #00ffcc; /* Neon cyan */
+}
+
+.modal {
+    background-color: #1a1a2e; /* Dark blue */
+    height: 110%;
+    width: 100%;
+    display: none;
+}
+
+.modal-contents {
+    margin: 10px;
+    width: 100%;
+    height: 40px;
+    color: #00ffcc; /* Neon cyan */
+    text-align: center;
+}
+
+#extra {
+    width: 100%;
+    color: #00ffcc; /* Neon cyan */
+    height: 50%;
+}
+
+.result {
+    width: 100%;
+    height: 24px;
+    color: #00ffcc; /* Neon cyan */
+}

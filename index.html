@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Ports Scanner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+
+  <div id="header-container">
+    <div id="header">
+      Vita Ports Scanner | Version 0.10.0
+    </div>
+  </div>
+
+  <div id="container">
+
+    <div id="modal" class="modal">
+
+      <h1 id="modal-title" class="modal-contents">Scanning Hosts</h1>
+      <div id="modal-extra">
+      </div>
+    </div>
+
+    <div id="menu">
+
+      <div class="item-container" id="device">
+        <div class="device" id="device-container">
+
+          <i class="device-data" id="device-ipv4">IPv4: 0.0.0.0</i>
+          <i class="device-data" id="device-netmask">Netmask: 255.255.255.255</i>
+          <i class="device-data" id="device-status">Status: DISCONNECTED</i>
+          <i class="device-data" id="scan-type">Scan Type: Quiet</i>
+        </div>
+
+      </div>
+
+      <div class="button-container" id="menu-container">
+        <button id="single-button" class="menu-button selected">Scan local network devices (X)</button>
+      </div>
+
+    </div>
+
+
+  </div>
+
+  <div id="footer">
+    Early version | Use at your own risk | Select (X) | Change scan (SELECT) | Help (TRIANGLE)
+  </div>
+
+
+  <script type="text/javascript">
+
+    var mapping = [
+      "X",
+      "CIRCLE",
+      "SQUARE",
+      "TRIANGLE",
+      "SHARE",
+      "PS",
+      "OPTIONS",
+      "LEFTSTICK",
+      "RIGHTSTICK",
+      "LEFTSHOULDER",
+      "RIGHTSHOULDER",
+      "DPAD_UP",
+      "DPAD_DOWN",
+      "DPAD_LEFT",
+      "DPAD_RIGHT",
+    ]
+
+    var hosts = null
+    var menu_displayed = 0
+    var menu_selected = 0
+    var max_items = 0
+    var unique_menuitem
+    var num_menu_items = 0
+    var device_info
+    var candidates = {}
+
+    // Hosts scan options
+    var hosts_scans = {
+      "quiet": 100000,
+      "agressive": 50000,
+      "brutal": 10000
+    }
+    var hosts_scan_selected = 'quiet'
+    var ports_scan_selected = 'quick'
+
+    function display_modal(title, extra) {
+      document.getElementById('modal-title').innerText = title
+      document.getElementById('modal-extra').innerHTML = extra
+      document.getElementById('modal').style.display = 'block'
+    }
+
+    function hide_modal() {
+      document.getElementById('modal').style.display = 'none'
+      document.getElementById('modal-extra').innerHTML = ''
+    }
+
+    function menu_create_items(items) {
+      console.log("Creating items");
+      var html = '';
+      var i = 0;
+      unique_menuitem = undefined;
+      max_items = items.length;
+
+      var MAX_DISPLAYED = 10;
+
+      // Update menu_displayed based on menu_selected
+      if (menu_selected < menu_displayed) {
+        // Scrolling up: move the display window up
+        menu_displayed = menu_selected;
+      } else if (menu_selected >= menu_displayed + MAX_DISPLAYED) {
+        // Scrolling down: move the display window down
+        menu_displayed = menu_selected - MAX_DISPLAYED + 1;
+      }
+
+      // Ensure menu_displayed doesn't go out of bounds
+      if (menu_displayed < 0) {
+        menu_displayed = 0;
+      } else if (menu_displayed + MAX_DISPLAYED > max_items) {
+        menu_displayed = max_items - MAX_DISPLAYED;
+      }
+
+      // Render the visible items
+      for (i = menu_displayed; i < menu_displayed + MAX_DISPLAYED && i < max_items; i++) {
+        if (!items[i]) {
+          continue
+        }
+        if (i === menu_selected) {
+          html += ' <button id="menuitem' + i + '" class="menu-button selected">' + items[i] + '</button>';
+        } else {
+          html += ' <button id="menuitem' + i + '" class="menu-button">' + items[i] + '</button>';
+        }
+      }
+
+      document.getElementById('menu-container').innerHTML = html;
+    }
+
+
+    function change_ports_scan() {
+
+      if (ports_scan_selected === 'quick') {
+        ports_scan_selected = 'thorough'
+      } else if (ports_scan_selected === 'thorough') {
+        ports_scan_selected = 'complete'
+      } else if (ports_scan_selected === 'complete') {
+        ports_scan_selected = 'quick'
+      }
+      console.log(ports_scan_selected)
+      document.getElementById('scan-type').innerText = 'Scan type: ' + ports_scan_selected
+    }
+
+    function change_hosts_scan() {
+
+      if (hosts_scan_selected === 'quiet') {
+        hosts_scan_selected = 'agressive'
+      } else if (hosts_scan_selected === 'agressive') {
+        hosts_scan_selected = 'brutal'
+      } else if (hosts_scan_selected === 'brutal') {
+        hosts_scan_selected = 'quiet'
+      }
+      document.getElementById('scan-type').innerText = 'Scan type: ' + hosts_scan_selected
+    }
+
+
+
+
+    function menu_move(direction) {
+      if (max_items == 0) {
+        return
+      }
+      if (direction === "UP") {
+        menu_selected = (menu_selected > 0) ? menu_selected - 1 : max_items - 1
+      } else {
+        menu_selected = (menu_selected < max_items - 1) ? menu_selected + 1 : 0
+      }
+      menu_create_items(hosts)
+      console.log("MENU SELECTED", menu_selected)
+      console.log("MAX ITEMS", max_items)
+      console.log("MENU_DISPLAYED", menu_displayed)
+
+    }
+
+    function decimalToIpv4(decimal) {
+      var octet1 = (decimal >>> 24) & 0xFF; // First octet (most significant 8 bits)
+      var octet2 = (decimal >>> 16) & 0xFF; // Second octet
+      var octet3 = (decimal >>> 8) & 0xFF;  // Third octet
+      var octet4 = decimal & 0xFF;         // Fourth octet (least significant 8 bits)
+      return octet1 + "." + octet2 + "." + octet3 + "." + octet4
+    }
+
+    function ipv4ToDecimal(ipv4) {
+      var octets = ipv4.split('.')
+      var octet = octets.map(Number);
+      var decimal = (octet[0] << 24) | (octet[1] << 16) | (octet[2] << 8) | octet[3];
+      return decimal;
+    }
+
+    function enumerateIpAddresses(gateway, netmask) {
+      var gatewayDecimal = ipv4ToDecimal(gateway);
+      var netmaskDecimal = ipv4ToDecimal(netmask);
+
+      var networkAddress = gatewayDecimal & netmaskDecimal;
+      var broadcastAddress = networkAddress | (~netmaskDecimal & 0xFFFFFFFF);
+
+      var ipAddresses = [];
+      for (var i = networkAddress + 1; i < broadcastAddress; i++) {
+        ipAddresses.push(decimalToIpv4(i));
+      }
+
+      return ipAddresses;
+    }
+
+    function help_modal() {
+      var html = "<div class='modal-contents'>This app is a TCP ports scanner for PS Vita written in HTML/JS using Quark. Please use responsibly and on environments where TCP ports scanning is 100% safe. The developers are not responsible for malicious usage and/or issues caused by the scan. This app is still in an early stage, feel free to contribute to it or create issues on GitHub!</div>"
+      html += "<br/><br/><div class='modal-contents'>Github Page: github.com/lp1dev/vita_ports_scanner</div>"
+      html += "<div class='modal-contents'>Press CIRCLE to close modals that can be closed.</div>"
+      display_modal("Vita Ports Scanner", html)
+    }
+
+    function scan_ports(host, scan_type) {
+      var i = 0
+      var max = 65536
+      if (ports_scan_selected === 'quick') {
+        i = 0
+        max = 1000
+      } else if (ports_scan_selected === 'thorough') {
+        max = 10001
+      }
+      var open = []
+      var closed = []
+      while (i < max) {
+        // var socket = new Socket(host, i)
+        // var ret = socket.connect()
+        var socket = new Socket(host, i)
+        var ret = socket.ping(hosts_scans[hosts_scan_selected])
+        socket.close()
+        if (ret >= 0) {
+          // quark_debug("Port " + i + " is open." + ret)
+          open.push(i)
+        } else if (ret === -6) {
+          // quark_debug("Port " + i + " is closed. Got a RST." + ret)
+          closed.push(i)
+        } else if (ret === -5) {
+          // quark_debug("Port " + i + " is maybe closed? No response." + ret)
+        }
+        socket.close()
+
+        i++;
+      }
+      // Rendering results
+      var first = 1
+      html = '<div class="modal-contents">Open : '
+      open.forEach(function (port) {
+        if (first) {
+          first = 0
+        } else {
+          html += ','
+        }
+        html += port
+
+      })
+      html += "</div>"
+      display_modal(host, html)
+    }
+
+    function scan_port(host, port) {
+      var socket = new Socket(host, port)
+      var ret = socket()
+      socket.close()
+      return ret
+    }
+
+    function scan_hosts() {
+      var gw = device_info.gateway
+      var netmask = device_info.netmask
+      // Debug overrides
+      // gw = "192.168.128.1"
+      // netmask = "255.255.254.0"
+      //
+
+      var candidates = enumerateIpAddresses(gw, netmask)
+      var duration = (candidates.length * hosts_scans[hosts_scan_selected]) / 1000000
+      var html = ''
+      html += "<div class='modal-contents'>Scanning " + candidates.length + " hosts...</div>"
+      html += "<div class='modal-contents'>This should take about " + duration + " seconds</div>"
+      html += "<div class='modal-contents'>The app might seem unresponsive during the scan.</div>"
+
+      display_modal("Scanning hosts", html)
+      setTimeout(function () {
+        hosts = []
+        candidates.forEach(
+          function (ip) {
+            var socket = new Socket(ip, 80)
+            var ret = socket.ping(hosts_scans[hosts_scan_selected])
+            socket.close()
+            if (ret >= 0 || ret == -6) { // Either a RST or a SYN+ACK 
+              // quark_debug("Host is validated as up " + ip)
+              hosts.push(ip)
+            }
+          }
+        )
+        hide_modal()
+        menu_create_items(hosts)
+        quark_debug(JSON.stringify(hosts))
+        document.getElementById('scan-type').innerText = 'Scan type: quick'
+      }, 1000)
+    }
+
+    function scan_ports_modal() {
+      var html = "<div class='modal-contents'>Scanning open TCP ports...</div>"
+      var num_ports = 65535
+      var message = 'This should take a few minutes if the host is actually up. Switch to other scan types for faster timeouts.'
+      if (ports_scan_selected === 'quick') {
+        num_ports = 1000
+        message = 'This should only take a few seconds if the host is actually up. Switch to other scan types for more thorough scans.'
+      } else if (ports_scan_selected === 'thorough') {
+        num_ports = 10000
+        message = 'This should take less than one minute if the host is actually up. Switch to other scan types for more thorough or faster scans.'
+      }
+      html += "<div class='modal-contents'>Scanning " + num_ports + " ports." + message
+      html += "</div>"
+      display_modal(hosts[menu_selected], html)
+
+    }
+
+    function menu_select(item) {
+      if (item === "scan_hosts") {
+        scan_hosts()
+      } else if (item === "scan_ports") {
+        scan_ports_modal()
+        setTimeout(function () {
+          scan_ports(hosts[menu_selected])
+        }, 1000)
+      } else if (item === "reload") {
+        get_device_info()
+      }
+    }
+
+    function handle_button(event, type) {
+      if (event.code === 1073741906 || (type === 'joystick'
+        && mapping[event.code] === "DPAD_UP")) {
+        menu_move("UP")
+      } else if (event.code === 1073741905 || (type === 'joystick'
+        && mapping[event.code] === "DPAD_DOWN")) {
+        menu_move("DOWN")
+      } else if (event.code === 13 && type === 'keyboard'
+        || mapping[event.code] === "X") {
+        if (unique_menuitem) {
+          menu_select(unique_menuitem)
+        } else {
+          menu_select("scan_ports")
+        }
+      } else if (event.code == 27 && type === 'keyboard') {
+        c_exit(0)
+      } else if (type === 'joystick' && mapping[event.code] === "CIRCLE" || event.code === 118) {
+        hide_modal()
+      } else if (type === 'joystick' && mapping[event.code] === "SHARE" || event.code === 98) {
+        if (hosts === null) {
+          change_hosts_scan()
+        } else {
+          change_ports_scan()
+        }
+      } else if (type === 'joystick' && mapping[event.code] === "TRIANGLE" || event.code === 120) {
+        // if (document.getElementById('modal').style.display == 'block') {
+        // hide_modal()
+        // } else {
+        help_modal()
+        // }
+        console.log(document.getElementById('modal').style.display)
+      }
+      quark_debug("Code " + event.code + " " + type)
+    }
+
+    document.addEventListener('keydown', function (event) {
+      handle_button(event, 'keyboard')
+    })
+
+    document.addEventListener('button_press', function (event) {
+      // The "button_press" event is not a classic JS event
+      // but it is a custom quark optimization for the non-existent gamepad
+      // button press event which usually requires a setTimeout +
+      // polling of all the gamepads that is done in JS.
+      handle_button(event, 'joystick')
+    })
+
+    document.addEventListener("gamepadconnected", function (event) {
+      navigator.getGamepads()
+    })
+
+    function get_device_info() {
+      console.log("in get_device_info")
+      device_info = net_get_device_info()
+      console.log("Got device info", device_info)
+      // quark_debug("Device Info", JSON.stringify(device_info))
+
+      document.getElementById('device-ipv4').innerText = 'ipv4: ' + device_info.ipv4
+      document.getElementById('device-netmask').innerText = 'Netmask: ' + device_info.netmask
+
+      if (device_info['state'] === 3) { // CONNECTED
+        document.getElementById("single-button").innerText = 'Scan local network devices'
+        document.getElementById('device-status').innerText = 'Status: CONNECTED'
+
+        unique_menuitem = "scan_hosts"
+      } else {
+        document.getElementById("single-button").innerText = 'Reload device configuration (X)'
+        unique_menuitem = "reload"
+      }
+      document.getElementById("single-button").style.display = "block"
+
+    }
+
+    get_device_info()
+    document.getElementById('modal').style.display = 'none'
+
+  </script>
+
+</body>
+
+</html>
