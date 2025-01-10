@@ -7,10 +7,7 @@ It requires an **index.html** and **style.css** file as a starting point, all of
 It is a TCP hosts/ports scanner for local networks, which for each scan type 3 different scan levels.
 
 
-![first screen](./screenshots/screenshot1.png)
-![second screen](./screenshots/screenshot2.png)
-![third screen](./screenshots/screenshot3.png)
-
+![screenshots](./screenshots/screenshot.gif)
 
 ---
 
