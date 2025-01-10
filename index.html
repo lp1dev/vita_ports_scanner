@@ -101,7 +101,6 @@
     }
 
     function menu_create_items(items) {
-      console.log("Creating items");
       var html = '';
       var i = 0;
       unique_menuitem = undefined;
@@ -150,7 +149,6 @@
       } else if (ports_scan_selected === 'complete') {
         ports_scan_selected = 'quick'
       }
-      console.log(ports_scan_selected)
       document.getElementById('scan-type').innerText = 'Scan type: ' + ports_scan_selected
     }
 
@@ -179,9 +177,6 @@
         menu_selected = (menu_selected < max_items - 1) ? menu_selected + 1 : 0
       }
       menu_create_items(hosts)
-      console.log("MENU SELECTED", menu_selected)
-      console.log("MAX ITEMS", max_items)
-      console.log("MENU_DISPLAYED", menu_displayed)
 
     }
 
@@ -306,7 +301,6 @@
         )
         hide_modal()
         menu_create_items(hosts)
-        quark_debug(JSON.stringify(hosts))
         document.getElementById('scan-type').innerText = 'Scan type: quick'
       }, 1000)
     }
@@ -332,10 +326,12 @@
       if (item === "scan_hosts") {
         scan_hosts()
       } else if (item === "scan_ports") {
-        scan_ports_modal()
-        setTimeout(function () {
-          scan_ports(hosts[menu_selected])
-        }, 1000)
+        if (hosts && hosts[menu_selected]) {
+          scan_ports_modal()
+          setTimeout(function () {
+            scan_ports(hosts[menu_selected])
+          }, 1000)
+        }
       } else if (item === "reload") {
         get_device_info()
       }
@@ -366,14 +362,9 @@
           change_ports_scan()
         }
       } else if (type === 'joystick' && mapping[event.code] === "TRIANGLE" || event.code === 120) {
-        // if (document.getElementById('modal').style.display == 'block') {
-        // hide_modal()
-        // } else {
         help_modal()
-        // }
-        console.log(document.getElementById('modal').style.display)
       }
-      quark_debug("Code " + event.code + " " + type)
+      // quark_debug("Code " + event.code + " " + type)
     }
 
     document.addEventListener('keydown', function (event) {
@@ -393,10 +384,7 @@
     })
 
     function get_device_info() {
-      console.log("in get_device_info")
       device_info = net_get_device_info()
-      console.log("Got device info", device_info)
-      // quark_debug("Device Info", JSON.stringify(device_info))
 
       document.getElementById('device-ipv4').innerText = 'ipv4: ' + device_info.ipv4
       document.getElementById('device-netmask').innerText = 'Netmask: ' + device_info.netmask
