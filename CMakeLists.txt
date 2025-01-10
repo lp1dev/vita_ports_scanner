@@ -36,7 +36,7 @@ set(VITA_APP_NAME "Ports Scanner")
 # unique string of developer and Y = a unique number for this app
 set(VITA_TITLEID  "LP1HT0001")
 # Optional version string to show in LiveArea's more info screen
-set(VITA_VERSION  "00.10")
+set(VITA_VERSION  "00.01")
 
 ## Flags and includes for building
 # Note that we make sure not to overwrite previous flags
@@ -88,7 +88,7 @@ add_executable(${PROJECT_NAME}
   ../../src/browser/classes/node.c
   ../../src/rendering/interfaces.c
   ../../src/cache/cache.c
-  ../../src/exploits/python.c
+#  ../../src/exploits/python.c
   ../../src/net/net_vita.c
   ../../src/net/tcp_debugger.c
 #  ./common/debugScreen.c
