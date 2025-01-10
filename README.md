@@ -11,6 +11,13 @@ It is a TCP hosts/ports scanner for local networks, which for each scan type 3 d
 ![second screen](./screenshots/screenshot2.png)
 ![third screen](./screenshots/screenshot3.png)
 
+
+---
+
+## Disclaimer
+
+TCP ports and hosts scanning **can cause issues** on the targeted system. It may also be **illegal or unauthorized**, do not use this tool on **networks you are not authorized to test** and **networks on which TCP scanning can cause issues**.
+
 ---
 
 ## Install
